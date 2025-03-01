@@ -1,15 +1,15 @@
 package tracklist
 
 import (
-	"github.com/dece2183/yamusic-tui/config"
-	"github.com/dece2183/yamusic-tui/ui/model"
-	"github.com/dece2183/yamusic-tui/ui/style"
-
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/dece2183/yamusic-tui/config"
+	"github.com/dece2183/yamusic-tui/ui/model"
+	"github.com/dece2183/yamusic-tui/ui/style"
+	"github.com/ebitengine/oto/v3"
 )
 
 type Control uint
@@ -30,6 +30,7 @@ type Model struct {
 	program       *tea.Program
 	list          list.Model
 	help          help.Model
+	player        *oto.Player
 	width, height int
 
 	Title      string
@@ -72,7 +73,12 @@ func (m *Model) View() string {
 	if m.help.ShowAll {
 		m.list.SetHeight(m.height - 4)
 	} else {
-		m.list.SetHeight(m.height - 4)
+		if config.Current.ShowLyrics && m.player != nil {
+			m.list.SetHeight(m.height - 6)
+		} else {
+			m.list.SetHeight(m.height - 4)
+		}
+
 	}
 
 	return style.TrackBoxStyle.Width(m.width).Render(lipgloss.JoinVertical(lipgloss.Left, m.list.View(), "", m.help.View(helpMap)))

@@ -3,11 +3,16 @@ package config
 import "gopkg.in/yaml.v3"
 
 type CacheType uint
+type LyricsPlacement uint
 
 const (
 	CACHE_NONE CacheType = iota
 	CACHE_LIKED_ONLY
 	CACHE_ALL
+)
+const (
+	LYRICS_PLACEMENT_ABOVE LyricsPlacement = iota
+	LYRICS_PLACEMENT_BELOW
 )
 
 var cacheValueToEnum = map[string]CacheType{
@@ -26,6 +31,18 @@ var cacheEnumToValue = map[CacheType]string{
 	CACHE_ALL:        "all",
 }
 
+var lyricsPlacementValueToEnum = map[string]LyricsPlacement{
+	"below": LYRICS_PLACEMENT_BELOW,
+	"down":  LYRICS_PLACEMENT_BELOW,
+	"above": LYRICS_PLACEMENT_ABOVE,
+	"up":    LYRICS_PLACEMENT_ABOVE,
+}
+
+var lyricsPlacementEnumToValue = map[LyricsPlacement]string{
+	LYRICS_PLACEMENT_BELOW: "below",
+	LYRICS_PLACEMENT_ABOVE: "above",
+}
+
 func (t *CacheType) UnmarshalYAML(value *yaml.Node) error {
 	*t = cacheValueToEnum[value.Value]
 	return nil
@@ -36,6 +53,18 @@ func (t CacheType) MarshalYAML() (interface{}, error) {
 		t = CACHE_NONE
 	}
 	return cacheEnumToValue[t], nil
+}
+
+func (t *LyricsPlacement) UnmarshalYAML(value *yaml.Node) error {
+	*t = lyricsPlacementValueToEnum[value.Value]
+	return nil
+}
+
+func (t LyricsPlacement) MarshalYAML() (interface{}, error) {
+	if t > LYRICS_PLACEMENT_BELOW {
+		t = LYRICS_PLACEMENT_ABOVE
+	}
+	return lyricsPlacementEnumToValue[t], nil
 }
 
 type Controls struct {
@@ -77,26 +106,28 @@ type Search struct {
 }
 
 type Config struct {
-	Token          string    `yaml:"token"`
-	BufferSize     float64   `yaml:"buffer-size-ms"`
-	RewindDuration float64   `yaml:"rewind-duration-s"`
-	Volume         float64   `yaml:"volume"`
-	VolumeStep     float64   `yaml:"volume-step"`
-	ShowLyrics     bool      `yaml:"show-lyrics"`
-	CacheTracks    CacheType `yaml:"cache-tracks"`
-	CacheDir       string    `yaml:"cache-dir"`
-	Search         *Search   `yaml:"search"`
-	Controls       *Controls `yaml:"controls"`
+	Token           string          `yaml:"token"`
+	BufferSize      float64         `yaml:"buffer-size-ms"`
+	RewindDuration  float64         `yaml:"rewind-duration-s"`
+	Volume          float64         `yaml:"volume"`
+	VolumeStep      float64         `yaml:"volume-step"`
+	ShowLyrics      bool            `yaml:"show-lyrics"`
+	LyricsPlacement LyricsPlacement `yaml:"lyrics-placement"`
+	CacheTracks     CacheType       `yaml:"cache-tracks"`
+	CacheDir        string          `yaml:"cache-dir"`
+	Search          *Search         `yaml:"search"`
+	Controls        *Controls       `yaml:"controls"`
 }
 
 var defaultConfig = Config{
-	BufferSize:     80,
-	RewindDuration: 5,
-	Volume:         0.5,
-	VolumeStep:     0.05,
-	ShowLyrics:     false,
-	CacheTracks:    CACHE_LIKED_ONLY,
-	CacheDir:       "",
+	BufferSize:      80,
+	RewindDuration:  5,
+	Volume:          0.5,
+	VolumeStep:      0.05,
+	ShowLyrics:      false,
+	LyricsPlacement: LYRICS_PLACEMENT_ABOVE,
+	CacheTracks:     CACHE_LIKED_ONLY,
+	CacheDir:        "",
 	Search: &Search{
 		Artists:   true,
 		Albums:    false,

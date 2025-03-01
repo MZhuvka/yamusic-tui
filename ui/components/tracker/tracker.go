@@ -110,6 +110,7 @@ func (m *Model) View() string {
 	}
 
 	var trackTitle string
+	var lyrics string
 	if m.help.ShowAll {
 		trackTitle = lipgloss.JoinVertical(lipgloss.Left, "")
 	} else {
@@ -184,17 +185,22 @@ func (m *Model) View() string {
 			case false:
 				currentLine = "This song doesn't have synced lyrics!"
 			}
+			previousLine = lipgloss.NewStyle().Foreground(lipgloss.Color("#222222")).Render(previousLine)
+			nextLine = lipgloss.NewStyle().Foreground(lipgloss.Color("#444444")).Render(nextLine)
+			lyrics = lipgloss.JoinVertical(lipgloss.Center, previousLine, currentLine, nextLine)
+			lyrics = lipgloss.NewStyle().Width(m.width - 4).AlignHorizontal(lipgloss.Center).Render(lyrics)
 		}
-		previousLine = lipgloss.NewStyle().Foreground(lipgloss.Color("#222222")).Render(previousLine)
-		nextLine = lipgloss.NewStyle().Foreground(lipgloss.Color("#444444")).Render(nextLine)
-		lyrics := lipgloss.JoinVertical(lipgloss.Center, previousLine, currentLine, nextLine)
-		lyrics = lipgloss.NewStyle().Width(m.width - 4).AlignHorizontal(lipgloss.Center).Render(lyrics)
-		trackTitle = lipgloss.JoinVertical(lipgloss.Left, trackTitle, trackArtist, lyrics)
+		trackTitle = lipgloss.JoinVertical(lipgloss.Left, trackTitle, trackArtist)
 	}
 
 	tracker := style.TrackProgressStyle.Render(m.progress.View())
 	tracker = lipgloss.JoinHorizontal(lipgloss.Top, playButton, tracker)
-	tracker = lipgloss.JoinVertical(lipgloss.Left, tracker, trackTitle, m.help.View(helpMap))
+	switch config.Current.LyricsPlacement {
+	default:
+		tracker = lipgloss.JoinVertical(lipgloss.Left, tracker, trackTitle, " ", lyrics, " ", m.help.View(helpMap))
+	case config.LYRICS_PLACEMENT_ABOVE:
+		tracker = lipgloss.JoinVertical(lipgloss.Left, lyrics, " ", tracker, trackTitle, " ", m.help.View(helpMap))
+	}
 
 	return style.TrackBoxStyle.Width(m.width).Render(tracker)
 }
