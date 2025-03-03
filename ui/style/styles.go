@@ -10,11 +10,15 @@ const (
 )
 
 var (
-	AccentColor       = lipgloss.Color("#FC0")
-	BackgroundColor   = lipgloss.Color("#6b6b6b")
-	ActiveTextColor   = lipgloss.Color("#EEE")
-	NormalTextColor   = lipgloss.Color("#CCC")
-	InactiveTextColor = lipgloss.Color("#888")
+	AccentColor            = lipgloss.Color("#FC0")
+	ErrorColor             = lipgloss.Color("#F33")
+	BackgroundColor        = lipgloss.Color("#6b6b6b")
+	ActiveTextColor        = lipgloss.Color("#EEE")
+	NormalTextColor        = lipgloss.Color("#CCC")
+	InactiveTextColor      = lipgloss.Color("#888")
+	LyricsPreviosTextColor = lipgloss.Color("#444")
+	LyricsCurrentTextColor = lipgloss.Color("#EEE")
+	LyricsNextTextColor    = lipgloss.Color("#777")
 )
 
 var (
@@ -23,10 +27,13 @@ var (
 	IconLiked    = "💛"
 	IconNotLiked = "🤍"
 	IconCached   = "💿"
+	IconDotLight = lipgloss.NewStyle().Foreground(LyricsCurrentTextColor).Render("•")
+	IconDotDark  = lipgloss.NewStyle().Foreground(LyricsPreviosTextColor).Render("•")
 )
 
 var (
 	AccentTextStyle = lipgloss.NewStyle().Foreground(AccentColor)
+	ErrorTextStyle  = lipgloss.NewStyle().Foreground(ErrorColor)
 )
 
 var (

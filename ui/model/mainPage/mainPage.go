@@ -10,6 +10,7 @@ import (
 	"github.com/dece2183/yamusic-tui/api"
 	"github.com/dece2183/yamusic-tui/cache"
 	"github.com/dece2183/yamusic-tui/config"
+	"github.com/dece2183/yamusic-tui/log"
 	"github.com/dece2183/yamusic-tui/media"
 	"github.com/dece2183/yamusic-tui/media/handler"
 	"github.com/dece2183/yamusic-tui/ui/components/input"
@@ -285,6 +286,8 @@ func (m *Model) View() string {
 	if m.playlists.Width() > 0 {
 		sidePanel = m.playlists.View()
 	}
+
+	m.tracklist.SetHeight(m.height - m.tracker.Height() - 8)
 	midPanel := lipgloss.JoinVertical(lipgloss.Left, m.tracklist.View(), m.tracker.View())
 	return lipgloss.JoinHorizontal(lipgloss.Bottom, sidePanel, midPanel)
 }
@@ -301,7 +304,7 @@ func (m *Model) resize(width, height int) {
 		m.playlists.SetSize(-2, height-4)
 	}
 
-	m.tracklist.SetSize(m.width-m.playlists.Width()-4, height-14)
+	m.tracklist.SetSize(m.width-m.playlists.Width()-4, height-m.tracker.Height()-8)
 	m.tracker.SetWidth(m.width - m.playlists.Width() - 4)
 
 	searchWidth := style.SearchModalWidth
@@ -334,6 +337,8 @@ func (m *Model) initialLoad() error {
 		case playlist.MYWAVE:
 			tracks, err := m.client.StationTracks(api.MyWaveId, nil)
 			if err != nil {
+				log.Print(log.LVL_ERROR, "failed to obtain station tracks for the first time: %s", err)
+				m.tracker.ShowError("station tracks")
 				continue
 			}
 
@@ -346,6 +351,8 @@ func (m *Model) initialLoad() error {
 		case playlist.LIKES:
 			likes, err := m.client.LikedTracks()
 			if err != nil {
+				log.Print(log.LVL_ERROR, "failed to obtain liked tracks for the first time: %s", err)
+				m.tracker.ShowError("liked tracks")
 				continue
 			}
 
@@ -357,6 +364,8 @@ func (m *Model) initialLoad() error {
 
 			likedTracks, err := m.client.Tracks(likedTracksId)
 			if err != nil {
+				log.Print(log.LVL_ERROR, "failed to obtain liked tracks full info: %s", err)
+				m.tracker.ShowError("liked tracks info")
 				continue
 			}
 
@@ -365,6 +374,8 @@ func (m *Model) initialLoad() error {
 		case playlist.LOCAL:
 			station.Tracks, err = cache.ListTracks()
 			if err != nil {
+				log.Print(log.LVL_ERROR, "failed to list cached tracks: %s", err)
+				m.tracker.ShowError("cache list")
 				continue
 			}
 			for i := range station.Tracks {
@@ -380,6 +391,8 @@ func (m *Model) initialLoad() error {
 		for _, pl := range playlists {
 			playlistTracks, err := m.client.PlaylistTracks(pl.Kind, pl.Owner.Uid, false)
 			if err != nil {
+				log.Print(log.LVL_ERROR, "failed to obtain playlist [%s] tracks: %s", pl.Title, err)
+				m.tracker.ShowError("playlist tracks")
 				continue
 			}
 
@@ -392,6 +405,9 @@ func (m *Model) initialLoad() error {
 				Tracks:   playlistTracks,
 			})
 		}
+	} else {
+		log.Print(log.LVL_ERROR, "failed to obtain user playlists: %s", err)
+		m.tracker.ShowError("playlists")
 	}
 
 	m.playlists.Select(0)
