@@ -174,8 +174,12 @@ skipcover:
 				bestTrackInfo = t
 			}
 		}
-
-		trackReader, trackSize, err = m.client.DownloadTrack(bestTrackInfo)
+		for i := 0; i < 4; i++ {
+			trackReader, trackSize, err = m.client.DownloadTrack(bestTrackInfo)
+			if err == nil {
+				break
+			}
+		}
 		if err != nil {
 			return
 		}
