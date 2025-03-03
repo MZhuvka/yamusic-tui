@@ -161,17 +161,20 @@ func downloadRequest(token, reqUrl, mimeType string) (body io.ReadCloser, conten
 	req.Header.Set("accept", mimeType)
 	req.Header.Set("Authorization", "OAuth "+token)
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return
-	}
+	for i := 0; i < 4; i++ {
+		resp, err := client.Do(req)
+		if err != nil {
+			return
+		}
 
-	if resp.StatusCode == 200 {
-		body = resp.Body
-		contentLen = resp.ContentLength
-	} else {
-		err = fmt.Errorf("error code %d", resp.StatusCode)
-		resp.Body.Close()
+		if resp.StatusCode == 200 {
+			body = resp.Body
+			contentLen = resp.ContentLength
+			break
+		} else {
+			err = fmt.Errorf("error code %d", resp.StatusCode)
+			resp.Body.Close()
+		}
 	}
 
 	return
